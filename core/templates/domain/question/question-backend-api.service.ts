@@ -18,12 +18,13 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 
-import cloneDeep from 'lodash/cloneDeep';
-
 import {QuestionDomainConstants} from 'domain/question/question-domain.constants';
 import {Question, QuestionBackendDict} from 'domain/question/question.model';
 import {UrlInterpolationService} from 'domain/utilities/url-interpolation.service';
-import {QuestionSummaryForOneSkillBackendDict} from 'domain/question/question-summary-for-one-skill-object.model';
+import {
+  QuestionSummaryForOneSkill,
+  QuestionSummaryForOneSkillBackendDict,
+} from 'domain/question/question-summary-for-one-skill-object.model';
 import {DiagnosticTestQuestionsModel} from './diagnostic-test-questions.model';
 
 interface QuestionCountBackendResponse {
@@ -40,7 +41,7 @@ interface QuestionSummariesBackendResponse {
 }
 
 interface QuestionSummariesResponse {
-  questionSummaries: QuestionSummaryForOneSkillBackendDict[];
+  questionSummaries: QuestionSummaryForOneSkill[];
   more: boolean;
 }
 
@@ -70,7 +71,7 @@ export class QuestionBackendApiService {
     skillIds: string[],
     questionCount: number,
     questionsSortedByDifficulty: boolean,
-    successCallback: (value: QuestionBackendDict[]) => void,
+    successCallback: (value: Question[]) => void,
     errorCallback: (reason: string) => void
   ): void {
     if (
@@ -91,9 +92,11 @@ export class QuestionBackendApiService {
       .toPromise()
       .then(
         response => {
-          var questionDicts = cloneDeep(response.question_dicts);
+          const questions = response.question_dicts.map(questionDict =>
+            Question.createFromBackendDict(questionDict)
+          );
           if (successCallback) {
-            successCallback(questionDicts);
+            successCallback(questions);
           }
         },
         errorResponse => {
@@ -150,7 +153,12 @@ export class QuestionBackendApiService {
       .toPromise()
       .then(
         response => {
-          var questionSummaries = cloneDeep(response.question_summary_dicts);
+          const questionSummaries = response.question_summary_dicts.map(
+            questionSummaryDict =>
+              QuestionSummaryForOneSkill.createFromBackendDict(
+                questionSummaryDict
+              )
+          );
           if (successCallback) {
             successCallback({
               questionSummaries: questionSummaries,
@@ -218,7 +226,7 @@ export class QuestionBackendApiService {
     skillIds: string[],
     questionCount: number,
     questionsSortedByDifficulty: boolean
-  ): Promise<QuestionBackendDict[]> {
+  ): Promise<Question[]> {
     return new Promise((resolve, reject) => {
       this._fetchQuestions(
         skillIds,
