@@ -41,6 +41,7 @@ import {StateCard} from 'domain/state_card/state-card.model';
 import {WindowDimensionsService} from 'services/contextual/window-dimensions.service';
 import {InteractionCustomizationArgs} from 'interactions/customization-args-defs';
 import {Question} from 'domain/question/question.model';
+import {State} from 'domain/state/state.model';
 const questionDict = {
   id: 'question_id',
   question_state_data: {
@@ -125,7 +126,11 @@ const questionDict = {
 
 class MockQuestionBackendApiService {
   async fetchQuestionsAsync() {
-    return Promise.resolve([questionDict as unknown as QuestionBackendDict]);
+    return Promise.resolve([
+      Question.createFromBackendDict(
+        questionDict as unknown as QuestionBackendDict
+      ),
+    ]);
   }
 }
 
@@ -181,48 +186,30 @@ describe('Skill Preview Tab Component', () => {
     }).compileComponents();
   }));
 
-  let questionDict1 = {
-    question_state_data: {
-      content: {
-        html: 'question1',
-      },
-      interaction: {
-        id: 'TextInput',
-      },
-    },
-  } as QuestionBackendDict;
-  let questionDict2 = {
-    question_state_data: {
-      content: {
-        html: 'question2',
-      },
-      interaction: {
-        id: 'ItemSelectionInput',
-      },
-    },
-  } as QuestionBackendDict;
-  let questionDict3 = {
-    question_state_data: {
-      content: {
-        html: 'question3',
-      },
-      interaction: {
-        id: 'NumericInput',
-      },
-    },
-  } as QuestionBackendDict;
-  let questionDict4 = {
-    question_state_data: {
-      content: {
-        html: 'question4',
-      },
-      interaction: {
-        id: 'MultipleChoiceInput',
-      },
-    },
-  } as QuestionBackendDict;
+  const createQuestion = (
+    html: string,
+    interactionId: string
+  ): jasmine.SpyObj<Question> => {
+    const question = jasmine.createSpyObj<Question>('Question', [
+      'getStateData',
+    ]);
+    question.getStateData.and.returnValue({
+      content: {html: html},
+      interaction: {id: interactionId},
+    } as State);
+    return question;
+  };
+
+  let question1: jasmine.SpyObj<Question>;
+  let question2: jasmine.SpyObj<Question>;
+  let question3: jasmine.SpyObj<Question>;
+  let question4: jasmine.SpyObj<Question>;
 
   beforeEach(() => {
+    question1 = createQuestion('question1', 'TextInput');
+    question2 = createQuestion('question2', 'ItemSelectionInput');
+    question3 = createQuestion('question3', 'NumericInput');
+    question4 = createQuestion('question4', 'MultipleChoiceInput');
     fixture = TestBed.createComponent(SkillPreviewTabComponent);
     component = fixture.componentInstance;
     urlService = TestBed.inject(UrlService);
@@ -334,37 +321,32 @@ describe('Skill Preview Tab Component', () => {
   });
 
   it('should filter the questions', () => {
-    component.questionDicts = [
-      questionDict1,
-      questionDict2,
-      questionDict3,
-      questionDict4,
-    ];
+    component.questions = [question1, question2, question3, question4];
 
     component.questionTextFilter = 'question1';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict1]);
+    expect(component.displayedQuestions).toEqual([question1]);
 
     component.questionTextFilter = 'question3';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict3]);
+    expect(component.displayedQuestions).toEqual([question3]);
 
     component.questionTextFilter = '';
     component.interactionFilter = 'Item Selection';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict2]);
+    expect(component.displayedQuestions).toEqual([question2]);
 
     component.interactionFilter = 'Numeric Input';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict3]);
+    expect(component.displayedQuestions).toEqual([question3]);
 
     component.interactionFilter = 'Multiple Choice';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict4]);
+    expect(component.displayedQuestions).toEqual([question4]);
 
     component.interactionFilter = 'Text Input';
     component.applyFilters();
-    expect(component.displayedQuestions).toEqual([questionDict1]);
+    expect(component.displayedQuestions).toEqual([question1]);
   });
 
   it('should trigger feedback when an answer is submitted', fakeAsync(() => {
