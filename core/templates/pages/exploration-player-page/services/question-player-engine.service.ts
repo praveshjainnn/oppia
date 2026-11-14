@@ -37,7 +37,7 @@ import {PageContextService} from 'services/page-context.service';
 import {ExplorationHtmlFormatterService} from 'services/exploration-html-formatter.service';
 import {FocusManagerService} from 'services/stateful/focus-manager.service';
 import cloneDeep from 'lodash/cloneDeep';
-import {Question, QuestionBackendDict} from 'domain/question/question.model';
+import {Question} from 'domain/question/question.model';
 import {QuestionBackendApiService} from 'domain/question/question-backend-api.service';
 import {PlayerTranscriptService} from './player-transcript.service';
 
@@ -705,19 +705,16 @@ export class QuestionPlayerEngineService {
   /**
    * Initializes the question player with a set of questions.
    *
-   * @param {QuestionBackendDict[]} questionDicts - An array of question backend dicts to initialize with.
+   * @param {Question[]} questions - An array of questions to initialize with.
    * @param {(initialCard: StateCard, nextFocusLabel: string) => void} successCallback - Called when initialization succeeds.
    * @param {() => void} errorCallback - Called when initialization fails.
    */
   private initializeQuestionPlayerServices(
-    questionDicts: QuestionBackendDict[],
+    questions: Question[],
     successCallback: (initialCard: StateCard, nextFocusLabel: string) => void,
     errorCallback: () => void
   ): void {
-    let questionObjects = questionDicts.map(questionDict => {
-      return Question.createFromBackendDict(questionDict);
-    });
-    this.init(questionObjects, successCallback, errorCallback);
+    this.init(questions, successCallback, errorCallback);
   }
 
   /**
@@ -750,3 +747,4 @@ export class QuestionPlayerEngineService {
     return this._totalQuestionsReceivedEventEmitter;
   }
 }
+

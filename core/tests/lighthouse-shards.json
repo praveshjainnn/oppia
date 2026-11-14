@@ -27,8 +27,7 @@
     "moderator",
     "preferences",
     "profile",
-    "contributor-admin-dashboard",
-    "blog-author-profile"
+    "contributor-admin-dashboard"
   ],
   "3": [
     "classroom-admin",
@@ -38,14 +37,9 @@
     "creator-dashboard",
     "exploration-editor",
     "exploration-player",
-    "exploration-player-embed",
     "community-library",
     "pending-account-deletion",
-    "voiceover-admin",
-    "new-lesson-player",
-    "lesson-player-embed",
-    "collection-editor",
-    "collection-player"
+    "voiceover-admin"
   ],
   "4": [
     "topics-and-skills-dashboard",
@@ -57,20 +51,6 @@
     "learner-dashboard",
     "diagnostic-test-player",
     "practice-session",
-    "node-practice-session",
-    "mastery-challenge",
-    "end-of-arc-test",
     "subtopic-viewer"
-  ],
-  "5": [
-    "facilitator-dashboard",
-    "technical-feedback-dashboard",
-    "technical-feedback-detail",
-    "learner-group-creator",
-    "learner-group-editor",
-    "learner-group-viewer",
-    "error",
-    "error-iframed",
-    "maintenance"
   ]
 }

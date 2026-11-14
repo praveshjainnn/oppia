@@ -23,7 +23,6 @@ import re
 import subprocess
 import sys
 import threading
-import urllib.parse
 
 from core.constants import constants
 from scripts import build, common, servers
@@ -77,9 +76,10 @@ _PARSER.add_argument(
     help=(
         'The one-based index of the Lighthouse shard being run. Each shard '
         'runs only the setup its pages need: shard 1 audits the static and '
-        'public pages so its setup is skipped, and every other shard runs a '
-        'setup that assigns the roles its pages need and seeds any data they '
-        'read.'
+        'public pages so its setup is skipped, shard 2 audits the blog and '
+        'logged-in-user pages so only the blog setup runs, and the remaining '
+        'shards audit the data-dependent pages so all data setup except the '
+        'blog runs.'
     ),
     type=int,
     required=True,
@@ -249,15 +249,7 @@ def get_entity(line: str) -> tuple[str, str] | None:
     Returns:
         tuple(str, str) | None. The entity name and ID if the line is a URL.
     """
-    # The setup writes the URLs to stdout separated by newlines, so a line read
-    # back from the pipe keeps its trailing newline, and editor URLs can carry
-    # the "#/" hash fragment that the Angular router appends. Either artifact
-    # would otherwise become part of the last path segment and be
-    # percent-encoded into the audited URL ("\n" as "%0A", "#" as "%23"),
-    # pointing the audit at a route that does not exist so the page renders the
-    # Oppia error page instead of its content. Strip the fragment and any
-    # surrounding whitespace before splitting the URL into its path segments.
-    url_parts = line.strip().split('#', 1)[0].split('/')
+    url_parts = line.split('/')
     print('Parsing entity ID in line: %s' % line)
     url_patterns_to_entity_names = {
         'create': ('exploration_id', 4),
@@ -265,8 +257,6 @@ def get_entity(line: str) -> tuple[str, str] | None:
         'story_editor': ('story_id', 4),
         'skill_editor': ('skill_id', 4),
         '/blog/': ('blog_post_url_fragment', 4),
-        'edit-learner-group': ('learner_group_id', 4),
-        'technical-feedback-dashboard': ('feedback_report_id', 5),
     }
     for url_pattern, (
         entity_name,
@@ -473,15 +463,12 @@ def get_lighthouse_shards_config() -> dict[str, list[str]]:
 def inject_entities_into_url(url: str, entities: dict[str, str]) -> str:
     """Injects any entity IDs that a URL needs into the URL.
 
-    The injected entities are percent-encoded so that the resulting URL is
-    valid for the Angular router regardless of the characters in the entity ID.
-
     Args:
         url: str. The URL to inject entity IDs into.
         entities: dict(str, str). The possible entities to inject into the URL.
 
     Returns:
-        str. The URL with the percent-encoded entity ID injected into it.
+        str. The URL with the entity ID injected into it.
 
     Raises:
         ValueError. The entity referenced in the URL is not found in the
@@ -493,8 +480,7 @@ def inject_entities_into_url(url: str, entities: dict[str, str]) -> str:
         if entity_name not in entities:
             raise ValueError('Entity %s not found in entities.' % entity_name)
         injected_url = injected_url.replace(
-            '{{%s}}' % entity_name,
-            urllib.parse.quote(entities[entity_name], safe=''),
+            '{{%s}}' % entity_name, entities[entity_name]
         )
     return injected_url
 
@@ -644,12 +630,6 @@ def main(args: Optional[List[str]] = None) -> None:
             else parsed_args.pages
         )
         set_lighthouse_url_environment_variables(pages_to_run, entities)
-        # Shard 1 runs no setup, so the accounts the Lighthouse login script
-        # signs in as are never seeded. Tell the script to skip signing in
-        # rather than letting every page wait out the login timeout.
-        os.environ['LIGHTHOUSE_SKIP_LOGIN'] = (
-            '1' if parsed_args.shard == 1 else '0'
-        )
         with managed_lighthouse_appserver(SERVER_MODE_PROD):
             run_lighthouse_checks()
 

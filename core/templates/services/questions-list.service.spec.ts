@@ -33,7 +33,9 @@ describe('Questions List Service', () => {
   let sampleResponse = {
     question_summary_dicts: [
       {
-        skill_descriptions: [],
+        skill_id: '1',
+        skill_description: 'Skill description',
+        skill_difficulty: 0.5,
         summary: {
           creator_id: '1',
           created_on_msec: 0,
@@ -167,3 +169,4 @@ describe('Questions List Service', () => {
     expect(cachedQuestionSummaries[0]._questionSummary._questionId).toBe('0');
   }));
 });
+

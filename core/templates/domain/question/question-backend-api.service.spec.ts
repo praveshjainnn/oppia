@@ -23,6 +23,7 @@ import {TestBed, fakeAsync, flushMicrotasks} from '@angular/core/testing';
 import {QuestionBackendApiService} from 'domain/question/question-backend-api.service';
 import {QuestionBackendDict, Question} from 'domain/question/question.model';
 import {DiagnosticTestQuestionsModel} from './diagnostic-test-questions.model';
+import {QuestionSummaryForOneSkill} from './question-summary-for-one-skill-object.model';
 
 describe('Question backend Api service', () => {
   let questionBackendApiService: QuestionBackendApiService;
@@ -30,7 +31,9 @@ describe('Question backend Api service', () => {
   let sampleResponse = {
     question_summary_dicts: [
       {
-        skill_descriptions: [],
+        skill_id: '1',
+        skill_description: 'Skill description',
+        skill_difficulty: 0.5,
         summary: {
           creator_id: '1',
           created_on_msec: 0,
@@ -42,51 +45,13 @@ describe('Question backend Api service', () => {
     ],
     more: false,
   };
-  // Sample question object returnable from the backend.
+  // Sample question data returnable from the backend.
+  let sampleQuestionBackendDict = Question.createDefaultQuestion([
+    '1',
+  ]).toBackendDict(false);
+  sampleQuestionBackendDict.id = '0';
   let sampleDataResults = {
-    question_dicts: [
-      {
-        id: '0',
-        question_state_data: {
-          content: {
-            html: 'Question 1',
-          },
-          interaction: {
-            answer_groups: [],
-            confirmed_unclassified_answers: [],
-            customization_args: {},
-            default_outcome: {
-              dest: null,
-              dest_if_really_stuck: null,
-              feedback: {
-                html: 'Correct Answer',
-              },
-              param_changes: [],
-              labelled_as_correct: true,
-            },
-            hints: [
-              {
-                hint_content: {
-                  html: 'Hint 1',
-                },
-              },
-            ],
-            solution: {
-              correct_answer: 'This is the correct answer',
-              answer_is_exclusive: false,
-              explanation: {
-                html: 'Solution explanation',
-              },
-            },
-            id: 'TextInput',
-          },
-          param_changes: [],
-          solicit_answer_details: false,
-        },
-        language_code: 'en',
-        version: 1,
-      },
-    ],
+    question_dicts: [sampleQuestionBackendDict],
   };
 
   beforeEach(() => {
@@ -120,9 +85,10 @@ describe('Question backend Api service', () => {
 
     flushMicrotasks();
 
-    expect(successHandler).toHaveBeenCalledWith(
-      sampleDataResults.question_dicts
-    );
+    const fetchedQuestions = successHandler.calls.mostRecent().args[0];
+    expect(fetchedQuestions.length).toBe(1);
+    expect(fetchedQuestions[0]).toEqual(jasmine.any(Question));
+    expect(fetchedQuestions[0].getId()).toBe('0');
     expect(failHandler).not.toHaveBeenCalled();
   }));
 
@@ -147,9 +113,10 @@ describe('Question backend Api service', () => {
 
       flushMicrotasks();
 
-      expect(successHandler).toHaveBeenCalledWith(
-        sampleDataResults.question_dicts
-      );
+      const fetchedQuestions = successHandler.calls.mostRecent().args[0];
+      expect(fetchedQuestions.length).toBe(1);
+      expect(fetchedQuestions[0]).toEqual(jasmine.any(Question));
+      expect(fetchedQuestions[0].getId()).toBe('0');
       expect(failHandler).not.toHaveBeenCalled();
     })
   );
@@ -379,10 +346,13 @@ describe('Question backend Api service', () => {
 
     flushMicrotasks();
 
-    expect(successHandler).toHaveBeenCalledWith({
-      questionSummaries: sampleResponse.question_summary_dicts,
-      more: false,
-    });
+    const response = successHandler.calls.mostRecent().args[0];
+    expect(response.more).toBeFalse();
+    expect(response.questionSummaries.length).toBe(1);
+    expect(response.questionSummaries[0]).toEqual(
+      jasmine.any(QuestionSummaryForOneSkill)
+    );
+    expect(response.questionSummaries[0].getSkillId()).toBe('1');
     expect(failHandler).not.toHaveBeenCalled();
   }));
 
@@ -428,10 +398,13 @@ describe('Question backend Api service', () => {
 
     flushMicrotasks();
 
-    expect(successHandler).toHaveBeenCalledWith({
-      questionSummaries: sampleResponse.question_summary_dicts,
-      more: false,
-    });
+    const response = successHandler.calls.mostRecent().args[0];
+    expect(response.more).toBeFalse();
+    expect(response.questionSummaries.length).toBe(1);
+    expect(response.questionSummaries[0]).toEqual(
+      jasmine.any(QuestionSummaryForOneSkill)
+    );
+    expect(response.questionSummaries[0].getSkillId()).toBe('1');
     expect(failHandler).not.toHaveBeenCalled();
   }));
 
@@ -716,3 +689,4 @@ describe('Question backend Api service', () => {
     })
   );
 });
+

@@ -20,7 +20,6 @@ import {APP_BASE_HREF} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
 import {AppConstants} from 'app.constants';
-import {FeatureNames} from 'domain/feature-flag/feature-status-summary.model';
 import {IsLoggedInGuard} from './guards/is-logged-in.guard';
 import {CanAccessSplashPageGuard} from './guards/can-access-splash-page.guard';
 import {LessonPlayerPageAuthGuard} from 'pages/exploration-player-page/new-lesson-player/lesson-player-auth.guard';
@@ -44,7 +43,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .CERTIFICATE_OFFERING_AVAILABLE.ROUTE,
     pathMatch: 'full',
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/certificate-offering-available-page/certificate-offering-available-page.module'
@@ -151,7 +149,6 @@ const routes: Route[] = [
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.NODE_PRACTICE_SESSION
       .ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.StoryEditorArcs]},
     loadChildren: () =>
       import('pages/practice-session-page/practice-session-page.module').then(
         m => m.PracticeSessionPageModule
@@ -160,7 +157,6 @@ const routes: Route[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.END_OF_ARC_TEST.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.StoryEditorArcs]},
     loadChildren: () =>
       import('pages/practice-session-page/practice-session-page.module').then(
         m => m.PracticeSessionPageModule
@@ -169,7 +165,6 @@ const routes: Route[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.MASTERY_CHALLENGE.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.StoryEditorArcs]},
     loadChildren: () =>
       import('pages/practice-session-page/practice-session-page.module').then(
         m => m.PracticeSessionPageModule
@@ -187,7 +182,6 @@ const routes: Route[] = [
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .CERTIFICATE_ASSESSMENT_PLAYER.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/certificate-assessment-player-page/certificate-assessment-player-page.module'
@@ -196,7 +190,6 @@ const routes: Route[] = [
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .CERTIFICATE_ASSESSMENT_RESULT.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/certificate-assessment-result-page/certificate-assessment-result-page.module'
@@ -303,7 +296,6 @@ const routes: Route[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LESSON_PLAYER_EMBED.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.NewLessonPlayer]},
     loadChildren: () =>
       import(
         'pages/exploration-player-page/new-lesson-player/lesson-player-page.module'
@@ -312,7 +304,6 @@ const routes: Route[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.NEW_LESSON_PLAYER.ROUTE,
-    data: {requiredFeatureFlags: [FeatureNames.NewLessonPlayer]},
     loadChildren: () =>
       import(
         'pages/exploration-player-page/new-lesson-player' +
@@ -370,6 +361,23 @@ const routes: Route[] = [
   },
   {
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LIBRARY_INDEX.ROUTE,
+    pathMatch: 'full',
+    loadChildren: () =>
+      import('pages/library-page/library-page.module').then(
+        m => m.LibraryPageModule
+      ),
+  },
+  {
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LIBRARY_RECENTLY_PUBLISHED
+      .ROUTE,
+    pathMatch: 'full',
+    loadChildren: () =>
+      import('pages/library-page/library-page.module').then(
+        m => m.LibraryPageModule
+      ),
+  },
+  {
+    path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.LIBRARY_TOP_RATED.ROUTE,
     pathMatch: 'full',
     loadChildren: () =>
       import('pages/library-page/library-page.module').then(
@@ -548,7 +556,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .CERTIFICATE_CREATOR_DASHBOARD.ROUTE,
     pathMatch: 'full',
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/certificate-assessment-creator-dashboard-page/certificate-creator-dashboard-page.module'
@@ -558,7 +565,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .CREATE_CERTIFICATE_OFFERING.ROUTE,
     pathMatch: 'full',
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/create-certificate-offering-page/create-certificate-offering-page.module'
@@ -568,7 +574,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.EDIT_CERTIFICATE_OFFERING
       .ROUTE,
     pathMatch: 'full',
-    data: {requiredFeatureFlags: [FeatureNames.EnableCertificateAssessment]},
     loadChildren: () =>
       import(
         'pages/edit-certificate-offering-page/edit-certificate-offering-page.module'
@@ -578,9 +583,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND
       .TECHNICAL_FEEDBACK_DASHBOARD.ROUTE,
     pathMatch: 'full',
-    data: {
-      requiredFeatureFlags: [FeatureNames.TechnicalFeedbackDashboardEnabled],
-    },
     loadChildren: () =>
       import(
         'pages/technical-feedback-dashboard-page/technical-feedback-dashboard-page.module'
@@ -591,9 +593,6 @@ const routes: Route[] = [
     path: AppConstants.PAGES_REGISTERED_WITH_FRONTEND.TECHNICAL_FEEDBACK_DETAIL
       .ROUTE,
     pathMatch: 'full',
-    data: {
-      requiredFeatureFlags: [FeatureNames.TechnicalFeedbackDashboardEnabled],
-    },
     loadChildren: () =>
       import(
         'pages/technical-feedback-dashboard-page/technical-feedback-dashboard-page.module'
